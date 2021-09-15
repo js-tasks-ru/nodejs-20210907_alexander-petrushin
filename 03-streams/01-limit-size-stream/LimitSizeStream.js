@@ -1,5 +1,5 @@
-const stream = require('stream');
-const LimitExceededError = require('./LimitExceededError');
+const stream = require("stream");
+const LimitExceededError = require("./LimitExceededError");
 
 class LimitSizeStream extends stream.Transform {
   constructor(options) {
@@ -12,8 +12,8 @@ class LimitSizeStream extends stream.Transform {
   _transform(chunk, encoding, callback) {
     this.totalSizeOfAllTransferedChunks += chunk.byteLength;
     if (this.totalSizeOfAllTransferedChunks > this.limit) {
-      console.log('throw new LimitExceededError() CALLED');
-      throw new LimitExceededError;
+      console.log("throw new LimitExceededError() CALLED");
+      callback(new LimitExceededError, null);
     } else {
       callback(null, chunk);
     }

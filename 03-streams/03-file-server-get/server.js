@@ -1,4 +1,5 @@
 const url = require('url');
+const fs = require('fs');
 const http = require('http');
 const path = require('path');
 
@@ -12,6 +13,29 @@ server.on('request', (req, res) => {
 
   switch (req.method) {
     case 'GET':
+      if (pathname.includes('/')) {
+        res.statusCode = 400;
+        res.end();
+      } else if (fs.existsSync(filepath)) {
+        const stream = fs.createReadStream(filepath);
+        stream.pipe(res);
+        stream.on('error', (err) => {
+          res.statusCode = 500;
+          res.end();
+        });
+
+        req.on('aborted', () => {
+          stream.destroy();
+        });
+
+        res.statusCode = 200;
+      } else if (!fs.existsSync(filepath)) {
+        res.statusCode = 404;
+        res.end();
+      } else {
+        res.statusCode = 500;
+        res.end();
+      }
 
       break;
 
