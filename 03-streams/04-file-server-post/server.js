@@ -3,7 +3,7 @@ const http = require('http');
 const path = require('path');
 const LimitSizeStream = require('./LimitSizeStream');
 const fs = require('fs');
-const {EEXIST} = require('constants');
+const { EEXIST } = require('constants');
 
 const server = new http.Server();
 
@@ -19,7 +19,7 @@ server.on('request', (req, res) => {
         res.statusCode = 400;
         res.end();
       } else {
-        const limitedStream = new LimitSizeStream({limit: 1e6}); // 1 Мегабайт
+        const limitedStream = new LimitSizeStream({ limit: 1e6 }); // 1 Мегабайт
 
         const writeStream = fs.createWriteStream(filepath, {
           flags: 'wx',
@@ -44,13 +44,11 @@ server.on('request', (req, res) => {
 
         limitedStream.on('error', (err) => {
           if (err.code === 'LIMIT_EXCEEDED') {
-            // fs.rmSync(filepath, { force: true });
             res.statusCode = 413;
             res.end();
-            fs.unlink(filepath, (err) => {
-              if (err) throw err;
-              console.log(`${filepath} was deleted`);
-            });
+
+            writeStream.destroy();
+            fs.unlink(filepath, (err) => {});
             return;
           }
           res.statusCode = 500;
@@ -60,12 +58,7 @@ server.on('request', (req, res) => {
         req.on('aborted', () => {
           limitedStream.destroy();
           writeStream.destroy();
-          fs.unlink(filepath, (e) => {
-            console.log(
-                'Соединение было прервано, файл не сохранён',
-                e.message,
-            );
-          });
+          fs.unlink(filepath, (e) => {});
         });
 
         req.on('error', (error) => {
