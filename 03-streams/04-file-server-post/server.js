@@ -45,7 +45,7 @@ server.on('request', (req, res) => {
         limitedStream.on('error', (err) => {
           if (err.code === 'LIMIT_EXCEEDED') {
             res.statusCode = 413;
-            res.end();
+            res.end('file is too big');
 
             writeStream.destroy();
             fs.unlink(filepath, (err) => {});
